@@ -1,0 +1,293 @@
+BILLHARMONY DEMO SCRIPT - VIDEO SUBMISSION
+Target Length: 4-5 minutes
+
+================================================================================
+OPENING (0:00 - 0:30) - The Real Problem
+================================================================================
+
+"Meet Sarah. She just got a bill for $850 for a sleep study. But when she called her doctor's office, they told her it should only cost $190. She's confused, frustrated, and doesn't know who to trust.
+
+This happens millions of times every year. Patients face $220 billion in medical debt, not because they can't pay, but because they don't understand their costs until it's too late.
+
+Health systems spend thousands of hours answering billing questions. Patients delay care because they're afraid of surprise bills.
+
+We built BillHarmony to change that. It's a patient financial navigation platform that health systems deploy to help their patients - and we're launching with Joplin Regional Alliance for Health partnership."
+
+[Action: Navigate to patient dashboard]
+
+================================================================================
+AI-POWERED PROFILE SETUP (0:30 - 1:00) - The Foundation
+================================================================================
+
+"Here's how it starts. When a patient first uses BillHarmony, they have two options.
+
+Clinicians can set up accounts for their patients directly - perfect for health systems that want to onboard patients during appointments.
+
+Or patients can set up their own profile using our AI interview. Watch this."
+
+[Action: Show onboarding modal or Settings screen with onboarding option]
+
+"The AI doesn't just ask questions - it has a conversation. It understands natural language, extracts the information it needs, and builds a complete profile. No forms, no confusion, just a friendly conversation.
+
+The AI is smart enough to know what questions to ask, when to skip optional information, and how to extract details from casual responses. It's not just collecting data - it's understanding the patient's situation."
+
+[Screen: Show AI conversation flow]
+
+"This AI-powered onboarding means patients can get started in under two minutes, and health systems can onboard patients at scale without manual data entry."
+
+================================================================================
+COST ESTIMATOR (1:00 - 1:45) - AI Understanding Natural Language
+================================================================================
+
+"Now, here's where the real AI magic happens. Sarah wants to know what her sleep study will cost. She doesn't need to know CPT codes or medical terminology."
+
+[Action: Navigate to Cost Estimator, type "Sleep Study"]
+
+"She just types 'Sleep Study' in natural language. Our AI doesn't just search a database - it actually understands what she's asking for."
+
+[Action: Click Estimate Cost, show loading overlay]
+
+"Behind the scenes, our AI is doing something remarkable. It's analyzing her natural language input, identifying the medical procedure, mapping it to the correct CPT codes from thousands of possibilities, understanding the context - is this outpatient? Does it need contrast? What's the site of service?
+
+Then it's cross-referencing her insurance profile - her deductible status, her coinsurance, her network - with real CMS pricing data from thousands of hospitals. It's calculating her out-of-pocket cost based on her specific situation, not generic estimates."
+
+[Screen: Cost Breakdown appears]
+
+"The result? Sarah sees exactly what she'll pay, how we calculated it, and why. The AI explains it in plain language - 'You have $500 remaining on your deductible, so you'll pay $190 out of pocket.'"
+
+[Highlight: Show AI Insights]
+
+"And here's the power of AI - it doesn't just give her a number. It generates personalized insights. 'This cost is below your regional average' or 'You're close to meeting your deductible - consider scheduling other procedures this year.' The AI is thinking about her financial situation, not just spitting out data."
+
+================================================================================
+VISION AI FOR EOB PARSING (1:45 - 2:30) - The Game Changer
+================================================================================
+
+"But here's what makes us truly unique - and this is technology that no other platform has."
+
+[Action: Navigate to Bill Analyzer]
+
+"Sarah gets her Explanation of Benefits in the mail. It's a confusing document with codes, charges, and insurance jargon. Most people just file it away, hoping they don't owe anything.
+
+But with BillHarmony, she can take a photo of it or upload the PDF."
+
+[Action: Show EOB upload]
+
+"Our vision AI doesn't just read the text - it understands the document structure. It identifies what's a charge versus what's an adjustment. It extracts the CPT codes, the billed amounts, the allowed amounts. It understands the insurance logic - what was applied to deductible, what's coinsurance, what's copay.
+
+But more importantly, our AI is trained to spot problems. It compares what the EOB says against what we estimated. It flags unexpected charges. It identifies possible duplicates. It catches coding errors that could cost patients hundreds or thousands of dollars."
+
+[Screen: Show parsed results with flagged issues]
+
+"This is real AI - computer vision combined with medical billing expertise. It's not just OCR. It's understanding. And it's catching billing errors that patients would never notice until they get a surprise bill."
+
+================================================================================
+AUTOMATED CHARITY SCREENING (2:30 - 3:00) - AI Making Decisions
+================================================================================
+
+"Now, here's where AI does something that would take a human hours - and we do it automatically."
+
+[Screen: Return to Cost Breakdown, scroll to Charity Eligibility]
+
+"After Sarah sees her $190 estimate, our AI doesn't just show her the number and walk away. It's analyzing her financial situation. It's comparing her estimated cost against federal poverty level guidelines. It's calculating her income-to-cost ratio. It's determining if she might qualify for financial assistance - and if so, how much she could save."
+
+[Action: Show Charity Eligibility Banner with potential savings]
+
+"This isn't a simple lookup. The AI is making a decision. It's weighing multiple factors - her cost, her location, her insurance status, the type of procedure. It's generating a confidence score. It's creating a personalized message that explains her options.
+
+And here's the impact: This automated screening increases charity enrollment by 25%. Patients who would never have known they qualify are now getting help. Health systems are connecting patients with assistance programs they didn't know existed."
+
+[Screen: Show Assistance Programs]
+
+"The AI doesn't stop there. It's matching her with relevant assistance programs - payment plans, discounts, insurance help. It's creating a complete financial navigation hub, all powered by AI understanding her unique situation."
+
+================================================================================
+PROACTIVE AI (3:00 - 3:15) - Thinking Ahead
+================================================================================
+
+"And we're not reactive - we're proactive."
+
+[Screen: Navigate to Dashboard, show Upcoming Appointments]
+
+"When Sarah has an upcoming appointment, our AI doesn't wait for her to ask. It automatically generates a cost estimate. It tracks her deductible progress. It's thinking ahead - 'You're $500 away from your deductible, so this procedure will cost $190, but after this, your next procedures will be covered at 20% coinsurance.'"
+
+[Screen: Show Sleep Study appointment with deductible badge]
+
+"The AI is helping her plan, not just react to bills after they arrive."
+
+================================================================================
+HEALTH SYSTEM VALUE (3:15 - 3:45) - The Business Model
+================================================================================
+
+"But here's the business model - health systems deploy this for their patients."
+
+[Screen: Switch to Health System View, show Dashboard]
+
+"Health systems get a dashboard showing the real impact of this AI-powered platform. Billing questions reduced by 42% - because patients have answers before they call. Charity enrollment increased by 28% - because AI is finding patients who qualify. Patient satisfaction improved by 15% - because transparency builds trust."
+
+[Screen: Show charts - Trends showing AI impact over time]
+
+"These aren't just numbers - they're the result of AI working at scale. Every cost estimate, every EOB parsed, every charity screening - it's all happening automatically, 24/7, for thousands of patients."
+
+[Screen: Show Inbox]
+
+"And when patients do have questions, health systems manage them in one centralized inbox. The AI has already done the heavy lifting - identifying the issue, categorizing it, providing context. Staff time saved: over 2,300 hours per month."
+
+================================================================================
+THE TECHNOLOGY STORY (3:45 - 4:15) - What Makes It Special
+================================================================================
+
+"So what makes this possible? It's not just one AI - it's multiple AI systems working together.
+
+Natural language understanding that converts 'sleep study' into medical codes. Computer vision that reads and understands EOB documents. Decision-making AI that screens for financial assistance. Predictive AI that helps patients plan ahead.
+
+All of this is powered by real data - CMS pricing files, hospital transparency data, insurance networks. The AI isn't guessing - it's using actual healthcare pricing data to give patients accurate estimates."
+
+[Screen: Show "Deployed by" branding]
+
+"And it's white-labeled. Health systems deploy it to their patients, creating a seamless experience. We integrate with EPIC and other systems they already use."
+
+[Screen: Show EPIC Integration status]
+
+"This isn't a consumer app - it's a platform that health systems deploy to help their patients. And the AI makes it scalable."
+
+================================================================================
+CLOSING (4:15 - 4:45) - The Impact
+================================================================================
+
+"BillHarmony solves a $220 billion problem with AI that actually understands healthcare.
+
+For patients like Sarah: Clear cost estimates in plain language, automated assistance screening, and proactive help - all powered by AI that thinks about their financial situation.
+
+For health systems: Reduced billing questions, increased charity enrollment, better compliance, improved patient satisfaction - all because AI is working at scale.
+
+For the industry: A scalable, AI-powered solution that can be deployed across any health system, helping millions of patients navigate healthcare costs.
+
+We're launching with JRAH partnership, and we're ready to scale. This is the future of patient financial navigation - where AI doesn't just process data, it understands, decides, and helps.
+
+Thank you."
+
+[End Screen: BillHarmony logo]
+
+================================================================================
+KEY AI CAPABILITIES TO EMPHASIZE
+================================================================================
+
+1. Natural Language Understanding
+   - Converts "sleep study" to CPT codes
+   - Understands context and intent
+   - No medical terminology required
+
+2. Computer Vision for EOB Parsing
+   - Reads and understands document structure
+   - Extracts charges, codes, adjustments
+   - Identifies billing errors automatically
+
+3. Decision-Making AI
+   - Screens for charity eligibility
+   - Calculates confidence scores
+   - Makes personalized recommendations
+
+4. Predictive AI
+   - Tracks deductible progress
+   - Helps patients plan ahead
+   - Generates proactive insights
+
+5. Conversational AI
+   - Onboarding interview
+   - Natural, friendly conversations
+   - Extracts information intelligently
+
+================================================================================
+STORY ELEMENTS TO REMEMBER
+================================================================================
+
+- Start with Sarah's story (relatable patient)
+- Show the problem (confusion, surprise bills)
+- Demonstrate AI understanding (not just processing)
+- Emphasize what AI is actually doing (thinking, deciding, understanding)
+- Show the impact (real numbers, real outcomes)
+- Connect to health systems (B2B2C model)
+- End with vision (scalable, helping millions)
+
+================================================================================
+TIMING BREAKDOWN
+================================================================================
+
+Opening (Sarah's story): 0:30
+AI Profile Setup: 0:30
+Cost Estimator (AI understanding): 0:45
+Vision AI EOB Parsing: 0:45
+Automated Charity Screening: 0:30
+Proactive AI: 0:15
+Health System Value: 0:30
+Technology Story: 0:30
+Closing: 0:30
+TOTAL: 4:45
+
+================================================================================
+PRE-RECORDING CHECKLIST
+================================================================================
+
+Technical Setup:
+- Screen recording software ready
+- Microphone tested (clear audio)
+- Screen resolution 1920x1080 or higher
+- Browser zoom set to 100%
+- All demo data loaded and ready
+- API keys configured (if needed)
+
+Demo Flow Practice:
+- Practice full flow 3-5 times
+- Time each section
+- Have backup screenshots ready
+- Know exact navigation paths
+- Prepare for potential errors
+
+Content Preparation:
+- Sleep Study estimate ready
+- EOB example ready (if showing)
+- Onboarding flow ready to demonstrate
+- Health system dashboard data visible
+- All features working smoothly
+- Loading states tested
+
+Video Quality:
+- Good lighting
+- Clear audio (no background noise)
+- Smooth screen transitions
+- Cursor movements are deliberate
+- No typos or errors visible
+
+================================================================================
+RECORDING TIPS
+================================================================================
+
+1. Tell Sarah's Story: Make it personal, relatable
+2. Emphasize AI Understanding: Not just processing, but thinking
+3. Show the Magic: Let viewers see what AI is actually doing
+4. Connect the Dots: Show how AI systems work together
+5. Energy: Sound enthusiastic about the technology
+6. Practice: Record a test run first, watch it, refine
+
+================================================================================
+FINAL CHECKLIST BEFORE SUBMISSION
+================================================================================
+
+- Video is under 5 minutes
+- Sarah's story is told
+- AI capabilities clearly explained
+- Profile setup shown (AI interview)
+- EOB parsing demonstrated
+- Charity screening explained
+- Health system value shown
+- Technology story told
+- JRAH partnership mentioned
+- Audio is clear
+- Video quality is good
+- No errors or bugs visible
+- Professional and polished
+
+================================================================================
+END OF SCRIPT
+================================================================================

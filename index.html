@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BillHarmony</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'primary-blue': '#3A73F0',
+              'accent-green': '#4CC38A',
+              'brand-teal': '#20B2AA',        // Innovation, AI features
+              'brand-teal-light': '#E0F7F7',  // Light teal for backgrounds
+              'brand-gold': '#FFD700',         // Hope, assistance, charity care
+              'brand-gold-light': '#FFF8DC',   // Light gold for backgrounds
+              'soft-gray': '#F6F8FA',
+              'ink-black': '#1A1F25',
+              'silver-gray': '#5E6A75',
+              'warning-orange': '#F7A81B',
+              'error-red': '#E66A6A',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            boxShadow: {
+              'soft': '0 4px 12px 0 rgba(0, 0, 0, 0.05)',
+              'md': '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.5",
+    "recharts": "https://aistudiocdn.com/recharts@^3.3.0"
+  }
+}
+</script>
+<style>
+  body {
+    background-image: url("data:image/svg+xml,%3Csvg width='583' height='583' viewBox='0 0 583 583' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M583 291.5C583 452.486 452.486 583 291.5 583C130.514 583 0 452.486 0 291.5C0 130.514 130.514 0 291.5 0C452.486 0 583 130.514 583 291.5Z' fill='%233A73F0' fill-opacity='0.03'/%3E%3C/svg%3E%0A"), url("data:image/svg+xml,%3Csvg width='531' height='531' viewBox='0 0 531 531' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M531 265.5C531 412.085 412.085 531 265.5 531C118.915 531 0 412.085 0 265.5C0 118.915 118.915 0 265.5 0C412.085 0 531 118.915 531 265.5Z' fill='%234CC38A' fill-opacity='0.03'/%3E%3C/svg%3E%0A");
+    background-repeat: no-repeat, no-repeat;
+    background-position: calc(100% + 150px) calc(100% + 100px), calc(100% + 100px) calc(100% - 200px);
+  }
+   @keyframes fade-in-scale {
+      0% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    .animate-fade-in-scale {
+      animation: fade-in-scale 0.2s ease-out forwards;
+    }
+</style>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-soft-gray">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

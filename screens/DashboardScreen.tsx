@@ -42,7 +42,7 @@ const DashboardScreen: React.FC = () => {
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // For demo: JRAH partnership - in production this would come from health system config
   const deployedBy = 'Joplin Regional Alliance for Health';
 
@@ -50,177 +50,178 @@ const DashboardScreen: React.FC = () => {
     const loadData = () => {
       try {
         const userProfile = storageService.getUserProfile();
-      console.log('Dashboard: Loading profile:', userProfile);
-      setProfile(userProfile);
+        console.log('Dashboard: Loading profile:', userProfile);
+        setProfile(userProfile);
 
-      const estimates = storageService.getEstimates();
-      // Sort by most recent and take last 2
-      const sorted = estimates
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 2);
-      setSavedEstimates(sorted);
-      
-      // Load bills and find ones needing review - EXACT same logic as Bill Analyzer
-      const allBills = storageService.getBills();
-      const needsReview = allBills
-        .filter(bill => {
-          // Use EXACT same logic as Bill Analyzer renderBillCard
-          const billStatus = bill.status || 'uploaded';
-          const totalIssues = bill.analysis.summary.unexpectedCharges + 
-                             bill.analysis.summary.possibleDuplicates + 
-                             bill.analysis.lineItems.filter((item: any) => item.tags.includes('Coding Issue')).length;
-          const needsReview = billStatus === 'needs_review' || (totalIssues > 0 && billStatus === 'uploaded');
-          return needsReview;
-        })
-        .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
-      setBillsNeedingReview(needsReview);
-      
-      // FOR DEMO: Clear all and only show Sleep Study
-      // Find and update the Sleep Study estimate to have $590
-      const allEstimates = storageService.getEstimates();
-      let sleepEstimate = allEstimates.find(e => e.title === 'Sleep Study' || e.title.toLowerCase().includes('sleep'));
-      
-      // Update existing estimate to have $590 and current insurance profile
-      if (sleepEstimate && userProfile) {
-        // Update the existing estimate with $590 and current profile
-        const costProfile = buildCostProfile(userProfile);
-        const deductibleApplied = Math.min(costProfile.deductibleRemaining, 590);
-        const remainingAfterDeductible = 590 - deductibleApplied;
-        const coinsuranceDue = remainingAfterDeductible * (userProfile.coinsurance || 0.2);
-        const allowedAmount = 590 / (1 - (userProfile.coinsurance || 0.2)); // Estimate allowed amount
-        
-        // Get the correct Sleep Study providers and update their prices to match $590
-        // Do this asynchronously to avoid blocking
-        getProvidersNearZip(userProfile.zip, 50).then(sleepProviders => {
-          const sleepStudyProviders = sleepProviders.filter(p => 
-            p.specialties?.some(s => s.toLowerCase().includes('sleep'))
-          );
-          
-          // Create recommended providers with correct $590 pricing
-          const recommendedProviders = sleepStudyProviders.slice(0, 3).map(provider => {
-            // All providers should show $590 for consistency with the estimate
-            // Small variation based on price bias for realism
-            const priceVariation = provider.priceBias === 'low' ? 0.95 : provider.priceBias === 'high' ? 1.05 : 1.0;
-            const providerPrice = Math.round(590 * priceVariation);
-            
-            return {
-              provider: provider,
-              estimatedPrice: providerPrice,
-              distance: '2.5 mi', // Placeholder distance
-              isInNetwork: provider.networkHint === 'in' || userProfile.inNetworkPreference,
-              isPreferred: userProfile.preferredProviders?.some(pref => 
-                provider.name.toLowerCase().includes(pref.toLowerCase()) ||
-                pref.toLowerCase().includes(provider.name.toLowerCase())
-              ) || false,
+        const estimates = storageService.getEstimates();
+        // Sort by most recent and take last 2
+        const sorted = estimates
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2);
+        setSavedEstimates(sorted);
+
+        // Load bills and find ones needing review - EXACT same logic as Bill Analyzer
+        const allBills = storageService.getBills();
+        const needsReview = allBills
+          .filter(bill => {
+            // Use EXACT same logic as Bill Analyzer renderBillCard
+            const billStatus = bill.status || 'uploaded';
+            const totalIssues = bill.analysis.summary.unexpectedCharges +
+              bill.analysis.summary.possibleDuplicates +
+              bill.analysis.lineItems.filter((item: any) => item.tags.includes('Coding Issue')).length;
+            const needsReview = billStatus === 'needs_review' || (totalIssues > 0 && billStatus === 'uploaded');
+            return needsReview;
+          })
+          .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+        setBillsNeedingReview(needsReview);
+
+        // FOR DEMO: Clear all and only show Sleep Study
+        // Find and update the Sleep Study estimate to have $590
+        const allEstimates = storageService.getEstimates();
+        let sleepEstimate = allEstimates.find(e => e.title === 'Sleep Study' || e.title.toLowerCase().includes('sleep'));
+
+        // Update existing estimate to have $590 and current insurance profile
+        if (sleepEstimate && userProfile) {
+          // Update the existing estimate with $590 and current profile
+          const costProfile = buildCostProfile(userProfile);
+          const deductibleApplied = Math.min(costProfile.deductibleRemaining, 590);
+          const remainingAfterDeductible = 590 - deductibleApplied;
+          const coinsuranceDue = remainingAfterDeductible * (userProfile.coinsurance || 0.2);
+          const allowedAmount = 590 / (1 - (userProfile.coinsurance || 0.2)); // Estimate allowed amount
+
+          // Get the correct Sleep Study providers and update their prices to match $590
+          // Do this asynchronously to avoid blocking
+          getProvidersNearZip(userProfile.zip, 50).then(sleepProviders => {
+            const sleepStudyProviders = sleepProviders.filter(p =>
+              p.specialties?.some(s => s.toLowerCase().includes('sleep'))
+            );
+
+            // Create recommended providers with correct $590 pricing
+            const recommendedProviders = sleepStudyProviders.slice(0, 3).map(provider => {
+              // All providers should show $590 for consistency with the estimate
+              // Small variation based on price bias for realism
+              const priceVariation = provider.priceBias === 'low' ? 0.95 : provider.priceBias === 'high' ? 1.05 : 1.0;
+              const providerPrice = Math.round(590 * priceVariation);
+
+              return {
+                provider: provider,
+                estimatedPrice: providerPrice,
+                distance: '2.5 mi', // Placeholder distance
+                isInNetwork: provider.networkHint === 'in' || userProfile.inNetworkPreference,
+                isPreferred: userProfile.preferredProviders?.some(pref =>
+                  provider.name.toLowerCase().includes(pref.toLowerCase()) ||
+                  pref.toLowerCase().includes(provider.name.toLowerCase())
+                ) || false,
+              };
+            });
+
+            const updatedEstimate = {
+              ...sleepEstimate,
+              userId: userProfile.id,
+              inputsSnapshot: {
+                profile: userProfile,
+                costProfile: costProfile,
+              },
+              results: {
+                ...sleepEstimate.results,
+                estimatedOop: 590, // Update to $590
+                deductibleApplied: deductibleApplied,
+                coinsuranceDue: Math.round(coinsuranceDue),
+                allowedAmount: Math.round(allowedAmount),
+                totalBilled: Math.round(allowedAmount * 1.75), // Estimate total billed
+                insuranceAdjustment: Math.round(allowedAmount * 0.75), // Estimate adjustment
+              },
+              recommendedProviders: recommendedProviders, // Update with correct sleep study providers
+              updatedAt: new Date().toISOString(),
             };
+            storageService.saveEstimate(updatedEstimate);
+            console.log('Dashboard: Updated Sleep Study estimate to $590 with correct providers', updatedEstimate);
+          }).catch(err => {
+            console.error('Error updating providers:', err);
           });
-          
-          const updatedEstimate = {
-            ...sleepEstimate,
-            userId: userProfile.id,
-            inputsSnapshot: {
-              profile: userProfile,
-              costProfile: costProfile,
-            },
-            results: {
-              ...sleepEstimate.results,
-              estimatedOop: 590, // Update to $590
-              deductibleApplied: deductibleApplied,
-              coinsuranceDue: Math.round(coinsuranceDue),
-              allowedAmount: Math.round(allowedAmount),
-              totalBilled: Math.round(allowedAmount * 1.75), // Estimate total billed
-              insuranceAdjustment: Math.round(allowedAmount * 0.75), // Estimate adjustment
-            },
-            recommendedProviders: recommendedProviders, // Update with correct sleep study providers
-            updatedAt: new Date().toISOString(),
-          };
-          storageService.saveEstimate(updatedEstimate);
-          console.log('Dashboard: Updated Sleep Study estimate to $590 with correct providers', updatedEstimate);
-        }).catch(err => {
-          console.error('Error updating providers:', err);
-        });
-      } else if (userProfile && !sleepEstimate) {
-        // If no estimate exists, we'll let it be created when user clicks
-        // For now, just note that we need one
-        console.log('Dashboard: No Sleep Study estimate found, will be created on click');
-      }
-      
-      let deductibleRemaining = 0;
-      // Always use $590 for demo
-      const estimatedOop = 590;
-      
-      if (sleepEstimate && sleepEstimate.results && sleepEstimate.inputsSnapshot) {
-        // Keep estimatedOop at 590 for demo
-        // Get the deductible applied from the estimate results
-        const deductibleApplied = sleepEstimate.results.deductibleApplied || 0;
-        // Get the current deductible BEFORE the procedure from the cost profile
-        const deductibleBefore = sleepEstimate.inputsSnapshot.costProfile?.deductibleRemaining || 0;
-        // Calculate remaining AFTER this procedure
-        deductibleRemaining = Math.max(0, deductibleBefore - deductibleApplied);
-        console.log('Dashboard: Deductible calculation', {
-          deductibleBefore,
-          deductibleApplied,
-          deductibleRemaining,
-          estimatedOop,
-          hasEstimate: !!sleepEstimate
-        });
-      } else if (userProfile) {
-        // Fallback: use profile deductible if estimate not found
-        const costProfile = buildCostProfile(userProfile);
-        deductibleRemaining = costProfile.deductibleRemaining || 0;
-        console.log('Dashboard: Using profile deductible (no estimate found)', {
-          deductibleRemaining,
-          deductibleTotal: userProfile.deductibleTotal,
-          deductibleMet: userProfile.deductibleMet
-        });
-      }
-      
-      // Ensure we have a deductible value - use profile if estimate calculation failed
-      if (deductibleRemaining === 0 && userProfile) {
-        const costProfile = buildCostProfile(userProfile);
-        deductibleRemaining = costProfile.deductibleRemaining;
-        // If still 0, calculate what it would be after the procedure
-        if (deductibleRemaining === 0) {
-          // Deductible is met, so no badge needed
-          deductibleRemaining = 0;
-        } else {
-          // Calculate remaining after procedure
-          const deductibleApplied = Math.min(deductibleRemaining, estimatedOop);
-          deductibleRemaining = Math.max(0, deductibleRemaining - deductibleApplied);
+        } else if (userProfile && !sleepEstimate) {
+          // If no estimate exists, we'll let it be created when user clicks
+          // For now, just note that we need one
+          console.log('Dashboard: No Sleep Study estimate found, will be created on click');
         }
-        console.log('Dashboard: Final deductible calculation', {
-          deductibleRemaining,
-          estimatedOop,
-          fromProfile: true
-        });
-      }
-      
-      const sleepStudyAppointment: Appointment = {
-        id: 'apt-sleep-study',
-        date: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString(),
-        doctor: 'CoxHealth Sleep Disorders Center',
-        specialty: 'Sleep Medicine',
-        visitType: 'Sleep Study',
-        estimatedOop: 590, // Manually set to $590 for demo
-        deductibleRemaining: 500, // Demo: hardcoded to $500
-        createdAt: new Date().toISOString(),
-      };
-      const appointments = [sleepStudyAppointment];
-      storageService.saveAppointments(appointments);
-      console.log('Dashboard: Set Sleep Study appointment only', { estimatedOop, deductibleRemaining });
-      setUpcomingAppointments(appointments);
-      
-      // Show onboarding modal if no profile exists and onboarding not complete
-      if (!userProfile && !storageService.isOnboardingComplete()) {
-        setShowOnboardingModal(true);
-      }
+
+        let deductibleRemaining = 0;
+        // Always use $590 for demo
+        const estimatedOop = 590;
+
+        if (sleepEstimate && sleepEstimate.results && sleepEstimate.inputsSnapshot) {
+          // Keep estimatedOop at 590 for demo
+          // Get the deductible applied from the estimate results
+          const deductibleApplied = sleepEstimate.results.deductibleApplied || 0;
+          // Get the current deductible BEFORE the procedure from the cost profile
+          const deductibleBefore = sleepEstimate.inputsSnapshot.costProfile?.deductibleRemaining || 0;
+          // Calculate remaining AFTER this procedure
+          deductibleRemaining = Math.max(0, deductibleBefore - deductibleApplied);
+          console.log('Dashboard: Deductible calculation', {
+            deductibleBefore,
+            deductibleApplied,
+            deductibleRemaining,
+            estimatedOop,
+            hasEstimate: !!sleepEstimate
+          });
+        } else if (userProfile) {
+          // Fallback: use profile deductible if estimate not found
+          const costProfile = buildCostProfile(userProfile);
+          deductibleRemaining = costProfile.deductibleRemaining || 0;
+          console.log('Dashboard: Using profile deductible (no estimate found)', {
+            deductibleRemaining,
+            deductibleTotal: userProfile.deductibleTotal,
+            deductibleMet: userProfile.deductibleMet
+          });
+        }
+
+        // Ensure we have a deductible value - use profile if estimate calculation failed
+        if (deductibleRemaining === 0 && userProfile) {
+          const costProfile = buildCostProfile(userProfile);
+          deductibleRemaining = costProfile.deductibleRemaining;
+          // If still 0, calculate what it would be after the procedure
+          if (deductibleRemaining === 0) {
+            // Deductible is met, so no badge needed
+            deductibleRemaining = 0;
+          } else {
+            // Calculate remaining after procedure
+            const deductibleApplied = Math.min(deductibleRemaining, estimatedOop);
+            deductibleRemaining = Math.max(0, deductibleRemaining - deductibleApplied);
+          }
+          console.log('Dashboard: Final deductible calculation', {
+            deductibleRemaining,
+            estimatedOop,
+            fromProfile: true
+          });
+        }
+
+        const sleepStudyAppointment: Appointment = {
+          id: 'apt-sleep-study',
+          date: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString(),
+          doctor: 'CoxHealth Sleep Disorders Center',
+          specialty: 'Sleep Medicine',
+          visitType: 'Sleep Study',
+          estimatedOop: 590, // Manually set to $590 for demo
+          deductibleRemaining: 500, // Demo: hardcoded to $500
+          createdAt: new Date().toISOString(),
+        };
+        const appointments = [sleepStudyAppointment];
+        storageService.saveAppointments(appointments);
+        console.log('Dashboard: Set Sleep Study appointment only', { estimatedOop, deductibleRemaining });
+        setUpcomingAppointments(appointments);
+
+        // Never show onboarding modal in demo - profile is auto-created
+        // Only show if explicitly needed (which we don't want for demo)
+        // if (!userProfile && !storageService.isOnboardingComplete()) {
+        //   setShowOnboardingModal(true);
+        // }
       } catch (error) {
         console.error('Error loading dashboard data:', error);
       }
     };
 
     loadData();
-    
+
     // Also listen for storage events (in case profile or appointments are saved in another tab/window)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'billharmony_user_profile' || e.key === 'billharmony_appointments') {
@@ -228,36 +229,36 @@ const DashboardScreen: React.FC = () => {
       }
     };
     window.addEventListener('storage', handleStorageChange);
-    
+
     // Also listen for custom storage events (for same-tab updates)
     const handleCustomStorageChange = () => {
       loadData();
     };
     window.addEventListener('appointmentsUpdated', handleCustomStorageChange);
-    
+
     // Listen for bill updates - EXACT same logic as Bill Analyzer
     const handleBillsUpdated = () => {
       const allBills = storageService.getBills();
       const needsReview = allBills.filter(bill => {
         // Use EXACT same logic as Bill Analyzer renderBillCard
         const billStatus = bill.status || 'uploaded';
-        const totalIssues = bill.analysis.summary.unexpectedCharges + 
-                           bill.analysis.summary.possibleDuplicates + 
-                           bill.analysis.lineItems.filter((item: any) => item.tags.includes('Coding Issue')).length;
+        const totalIssues = bill.analysis.summary.unexpectedCharges +
+          bill.analysis.summary.possibleDuplicates +
+          bill.analysis.lineItems.filter((item: any) => item.tags.includes('Coding Issue')).length;
         const needsReview = billStatus === 'needs_review' || (totalIssues > 0 && billStatus === 'uploaded');
         return needsReview;
       }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
       setBillsNeedingReview(needsReview);
     };
     window.addEventListener('billsUpdated', handleBillsUpdated);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('appointmentsUpdated', handleCustomStorageChange);
       window.removeEventListener('billsUpdated', handleBillsUpdated);
     };
   }, [location.pathname]); // Reload when route changes (e.g., coming back from settings)
-  
+
   const handleOnboardingComplete = () => {
     const userProfile = storageService.getUserProfile();
     setProfile(userProfile);
@@ -268,15 +269,15 @@ const DashboardScreen: React.FC = () => {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 2);
     setSavedEstimates(sorted);
-    
+
     // Reload bills needing review - EXACT same logic as Bill Analyzer
     const allBills = storageService.getBills();
     const needsReview = allBills.filter(bill => {
       // Use EXACT same logic as Bill Analyzer renderBillCard
       const billStatus = bill.status || 'uploaded';
-      const totalIssues = bill.analysis.summary.unexpectedCharges + 
-                         bill.analysis.summary.possibleDuplicates + 
-                         bill.analysis.lineItems.filter((item: any) => item.tags.includes('Coding Issue')).length;
+      const totalIssues = bill.analysis.summary.unexpectedCharges +
+        bill.analysis.summary.possibleDuplicates +
+        bill.analysis.lineItems.filter((item: any) => item.tags.includes('Coding Issue')).length;
       const needsReview = billStatus === 'needs_review' || (totalIssues > 0 && billStatus === 'uploaded');
       return needsReview;
     }).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
@@ -358,7 +359,7 @@ const DashboardScreen: React.FC = () => {
                       day: 'numeric',
                       year: 'numeric',
                     });
-                    
+
                     // Calculate deductible remaining message
                     const deductibleRemaining = appointment.deductibleRemaining ?? 0;
                     const hasDeductibleMessage = deductibleRemaining > 0;
@@ -398,11 +399,11 @@ const DashboardScreen: React.FC = () => {
                         )}
 
                         {/* Action Button */}
-                        <button 
+                        <button
                           onClick={() => {
                             // Find the Sleep Study estimate and navigate to it
                             const allEstimates = storageService.getEstimates();
-                            const sleepEstimate = allEstimates.find(e => 
+                            const sleepEstimate = allEstimates.find(e =>
                               e.title === 'Sleep Study' || e.title.toLowerCase().includes('sleep')
                             );
                             if (sleepEstimate) {
@@ -447,9 +448,9 @@ const DashboardScreen: React.FC = () => {
               ) : (
                 <div className="space-y-3">
                   {billsNeedingReview.slice(0, 2).map((bill) => {
-                    const totalIssues = bill.analysis.summary.unexpectedCharges + 
-                                       bill.analysis.summary.possibleDuplicates + 
-                                       bill.analysis.lineItems.filter((item: any) => item.tags.includes('Coding Issue')).length;
+                    const totalIssues = bill.analysis.summary.unexpectedCharges +
+                      bill.analysis.summary.possibleDuplicates +
+                      bill.analysis.lineItems.filter((item: any) => item.tags.includes('Coding Issue')).length;
                     const uploadDate = new Date(bill.uploadedAt);
                     const formattedDate = uploadDate.toLocaleDateString('en-US', {
                       month: 'short',
@@ -608,7 +609,7 @@ const DashboardScreen: React.FC = () => {
           </Card>
         </div>
       </div>
-      
+
       {/* Onboarding Modal */}
       <Modal
         isOpen={showOnboardingModal}

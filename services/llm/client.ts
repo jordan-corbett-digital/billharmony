@@ -1,5 +1,9 @@
 // LLM Client - Abstraction layer for multiple AI providers
+// Uses Firebase Functions for secure API key handling
 // Supports OpenAI, Anthropic (Claude), and Google Gemini
+
+let functionsInitialized = false;
+let functionsInstance: any = null;
 
 export type LLMProvider = 'openai' | 'anthropic' | 'gemini';
 
@@ -26,48 +30,64 @@ export interface LLMResponse {
 }
 
 /**
- * Get the default LLM provider from environment variables
+ * Get the default LLM provider configuration
+ * Note: API keys are now stored server-side in Firebase Functions
+ * This just returns the preferred provider and model settings
  */
 export function getDefaultLLMConfig(): LLMConfig | null {
-  // Check for API keys in order of preference
-  if (import.meta.env.VITE_OPENAI_API_KEY) {
-    return {
-      provider: 'openai',
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-      model: import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini',
-      temperature: 0.7,
-      maxTokens: 2000,
-    };
-  }
+  // Always return a config - the actual API key is stored server-side
+  // Default to Gemini if available, otherwise try others
+  const preferredProvider = import.meta.env.VITE_PREFERRED_LLM_PROVIDER || 'gemini';
+  const preferredModel = import.meta.env.VITE_PREFERRED_LLM_MODEL || 
+    (preferredProvider === 'gemini' ? 'gemini-1.5-pro' : // Use gemini-1.5-pro (works in v1 API)
+     preferredProvider === 'openai' ? 'gpt-4o-mini' :
+     'claude-3-5-sonnet-20241022');
 
-  if (import.meta.env.VITE_ANTHROPIC_API_KEY) {
-    return {
-      provider: 'anthropic',
-      apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-      model: import.meta.env.VITE_ANTHROPIC_MODEL || 'claude-3-5-sonnet-20241022',
-      temperature: 0.7,
-      maxTokens: 2000,
-    };
-  }
-
-  // Check both VITE_ prefix and legacy process.env for Gemini
-  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || 
-                    (typeof process !== 'undefined' && (process.env as any).GEMINI_API_KEY);
-  if (geminiKey) {
-    return {
-      provider: 'gemini',
-      apiKey: geminiKey,
-      model: import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash-preview-05-20',
-      temperature: 0.7,
-      maxTokens: 2000,
-    };
-  }
-
-  return null;
+  return {
+    provider: preferredProvider as LLMProvider,
+    apiKey: '', // Not needed - handled server-side
+    model: preferredModel,
+    temperature: 0.7,
+    maxTokens: 2000,
+  };
 }
 
 /**
- * Call LLM with messages
+ * Initialize Firebase Functions (lazy load)
+ */
+async function initializeFunctions() {
+  if (functionsInitialized && functionsInstance) {
+    return functionsInstance;
+  }
+
+  try {
+    const { getFunctions, httpsCallable } = await import('firebase/functions');
+    const { initializeApp, getApps } = await import('firebase/app');
+    
+    // Initialize Firebase app if not already initialized
+    let app;
+    const apps = getApps();
+    if (apps.length === 0) {
+      app = initializeApp({
+        projectId: 'spitegarden',
+      });
+    } else {
+      app = apps[0];
+    }
+
+    // Specify the region where the function is deployed (us-central1)
+    functionsInstance = getFunctions(app, 'us-central1');
+    functionsInitialized = true;
+    console.log('✅ Firebase Functions initialized');
+    return functionsInstance;
+  } catch (error) {
+    console.error('❌ Failed to initialize Firebase Functions:', error);
+    throw error;
+  }
+}
+
+/**
+ * Call LLM with messages via Firebase Functions (secure backend)
  */
 export async function callLLM(
   messages: LLMMessage[],
@@ -76,18 +96,40 @@ export async function callLLM(
   const llmConfig = config || getDefaultLLMConfig();
 
   if (!llmConfig) {
-    throw new Error('No LLM API key configured. Please set VITE_OPENAI_API_KEY, VITE_ANTHROPIC_API_KEY, or VITE_GEMINI_API_KEY');
+    throw new Error('No LLM configuration available');
   }
 
-  switch (llmConfig.provider) {
-    case 'openai':
-      return callOpenAI(messages, llmConfig);
-    case 'anthropic':
-      return callAnthropic(messages, llmConfig);
-    case 'gemini':
-      return callGemini(messages, llmConfig);
-    default:
-      throw new Error(`Unsupported LLM provider: ${llmConfig.provider}`);
+  // Use Firebase Functions for secure API calls
+  try {
+    console.log('🔐 Calling LLM via Firebase Functions...');
+    const functions = await initializeFunctions();
+    const { httpsCallable } = await import('firebase/functions');
+    
+    const callLLMFunction = httpsCallable(functions, 'callLLM');
+    console.log('📞 Calling callLLM function with:', { 
+      provider: llmConfig.provider, 
+      model: llmConfig.model,
+      messageCount: messages.length 
+    });
+    
+    const result = await callLLMFunction({
+      messages,
+      provider: llmConfig.provider,
+      model: llmConfig.model,
+      temperature: llmConfig.temperature,
+      maxTokens: llmConfig.maxTokens,
+    });
+
+    console.log('✅ Firebase Functions response received');
+    return result.data as LLMResponse;
+  } catch (error: any) {
+    console.error('❌ Firebase Functions error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      details: error.details
+    });
+    throw new Error(`Failed to call LLM via backend: ${error.message || 'Unknown error'}`);
   }
 }
 
@@ -216,7 +258,7 @@ async function callGemini(
   const conversationMessages = messages.filter(m => m.role !== 'system');
 
   // Gemini API - use v1beta for most models, but some vision models need v1
-  const modelName = config.model || 'gemini-2.5-flash-preview-05-20';
+  const modelName = config.model || 'gemini-1.5-flash';
   
   // Use the model name as-is - it should match exactly what's in the API
   // Remove 'models/' prefix if present (API adds it automatically)

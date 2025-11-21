@@ -101,3 +101,4 @@ export function getCoinsuranceExplanation(coinsurance: number): string {
   return `After your deductible is met, you pay ${percent}% of the allowed amount, and your insurance pays the remaining ${100 - percent}%.`;
 }
 
+

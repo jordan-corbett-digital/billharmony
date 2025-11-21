@@ -20,10 +20,11 @@ const SettingsScreen: React.FC = () => {
     setProfile(userProfile);
     setIsLoading(false);
     
-    // Show onboarding if no profile exists
-    if (!userProfile && !storageService.isOnboardingComplete()) {
-      setShowOnboarding(true);
-    }
+    // Never show onboarding in demo - profile is auto-created
+    // Only show if explicitly needed (which we don't want for demo)
+    // if (!userProfile && !storageService.isOnboardingComplete()) {
+    //   setShowOnboarding(true);
+    // }
   }, []);
 
   useEffect(() => {

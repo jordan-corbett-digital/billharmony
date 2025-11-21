@@ -476,11 +476,30 @@ Thank you for your attention to this matter.`);
                                                     </div>
                                                 )}
                                                 {item.details && (
-                                                    <p className="text-sm text-ink-black mt-2">{item.details}</p>
+                                                    <div className="text-sm text-ink-black mt-2 space-y-1">
+                                                        {typeof item.details === 'string' ? (
+                                                            <p>{item.details}</p>
+                                                        ) : (
+                                                            <>
+                                                                {item.details.comparison && (
+                                                                    <p><strong>Comparison:</strong> {item.details.comparison}</p>
+                                                                )}
+                                                                {item.details.likelihoodOfError && (
+                                                                    <p><strong>Likelihood of Error:</strong> {item.details.likelihoodOfError}</p>
+                                                                )}
+                                                                {item.details.policyExcerpt && (
+                                                                    <p><strong>Policy:</strong> {item.details.policyExcerpt}</p>
+                                                                )}
+                                                                {item.details.transparencyFileData && (
+                                                                    <p><strong>Data:</strong> {item.details.transparencyFileData}</p>
+                                                                )}
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 )}
-                                                {item.suggestedAction && (
+                                                {(item.suggestedAction || (item.details && typeof item.details === 'object' && item.details.suggestedAction)) && (
                                                     <p className="text-sm text-primary-blue mt-2 font-semibold">
-                                                        💡 {item.suggestedAction}
+                                                        💡 {item.suggestedAction || (item.details && typeof item.details === 'object' ? item.details.suggestedAction : '')}
                                                     </p>
                                                 )}
                                             </div>

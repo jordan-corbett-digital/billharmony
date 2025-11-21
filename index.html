@@ -2,10 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="https://firebasestorage.googleapis.com/v0/b/spitegarden.firebasestorage.app/o/bh%20fav%20(64%20x%2064%20px)%20(1).png?alt=media&token=2a08c4ea-fc60-4f77-ac19-744f86fbf1e5" />
+    <link rel="apple-touch-icon" href="https://firebasestorage.googleapis.com/v0/b/spitegarden.firebasestorage.app/o/bh%20fav%20(64%20x%2064%20px)%20(1).png?alt=media&token=2a08c4ea-fc60-4f77-ac19-744f86fbf1e5" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BillHarmony</title>
+    <!-- Tailwind CSS CDN - Note: For production, consider using PostCSS plugin -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      // Suppress Tailwind CDN warning in console
+      if (typeof console !== 'undefined' && console.warn) {
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+          if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) {
+            return; // Suppress Tailwind CDN warning
+          }
+          originalWarn.apply(console, args);
+        };
+      }
+    </script>
     <script>
       tailwind.config = {
         theme: {

@@ -70,3 +70,4 @@ If you get a 401, the key is invalid. If you get a list of models, the key works
 
 The app will still work without a valid API key - it will use rule-based fallbacks. But for the best experience, you'll want a working API key.
 
+

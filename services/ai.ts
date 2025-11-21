@@ -12,7 +12,8 @@ import { getCPTSuggestions, validateCPTCode } from './cpt';
 import { estimateCoinsurance } from './coinsurance-estimator';
 
 // Flag to enable/disable LLM (useful for testing or when API keys aren't available)
-const USE_LLM = getDefaultLLMConfig() !== null;
+// Check at runtime, not build time, so it works in different environments
+const USE_LLM = () => getDefaultLLMConfig() !== null;
 
 /**
  * AI Onboarding Assistant
@@ -161,7 +162,7 @@ export class OnboardingAssistant {
     // For EOB step, always use rule-based response to ensure correct message
     if (this.state.currentStep === 'eob') {
       aiResponse = this.generateResponse();
-    } else if (USE_LLM) {
+    } else if (USE_LLM()) {
       try {
         // Use LLM for more natural conversation
         const conversationHistory = this.state.messages
@@ -754,7 +755,7 @@ IMPORTANT:
 export async function parseProcedureIntent(
   userInput: string
 ): Promise<ProcedureIntent> {
-  if (USE_LLM) {
+  if (USE_LLM()) {
     try {
       // Get CPT suggestions to help the AI
       const cptSuggestions = getCPTSuggestions(userInput);
@@ -856,7 +857,7 @@ export interface ProcedureParseResult {
 export async function parseProcedureIntentWithClarification(
   userInput: string
 ): Promise<ProcedureParseResult> {
-  if (USE_LLM) {
+  if (USE_LLM()) {
     try {
       // Get CPT suggestions to help the AI
       const cptSuggestions = getCPTSuggestions(userInput);
@@ -932,26 +933,25 @@ export async function parseProcedureIntentWithClarification(
         result.flags.contrast = false; // Default to without contrast
       }
 
-      // Determine if clarification is needed
-      const clarificationNeeded = result.clarificationNeeded || null;
+      // For demo: Never ask clarifying questions - just proceed with best guess
+      const clarificationNeeded = null;
       const confidence = result.confidence || 0.5;
       
-      // For demo: Only need conversation if confidence is very low (< 0.5) 
-      // Don't ask for clarification on common things like contrast (we default to without contrast)
-      const needsConversation = confidence < 0.5;
+      // Always proceed - never need conversation for demo
+      const needsConversation = false;
 
-      // If clarification is needed, lower confidence further
-      if (clarificationNeeded) {
-        result.confidence = Math.max(0.5, confidence - 0.2);
+      // Boost confidence if it's low - we're proceeding anyway
+      if (confidence < 0.7) {
+        result.confidence = 0.7; // Set minimum confidence for demo
       }
 
       // Remove clarificationNeeded from result to get ProcedureIntent
       const { clarificationNeeded: _, ...procedureIntent } = result;
-      
+
       return {
         procedureIntent,
-        clarificationNeeded,
-        needsConversation,
+        clarificationNeeded: null, // Never ask questions
+        needsConversation: false, // Always proceed
       };
     } catch (error) {
       console.error('LLM error in procedure parsing, falling back to rule-based:', error);
@@ -961,13 +961,16 @@ export async function parseProcedureIntentWithClarification(
 
   // Fallback to rule-based logic
   const procedureIntent = parseProcedureIntentRuleBased(userInput);
-  // For demo: Only need conversation if confidence is very low (< 0.5)
-  const needsConversation = procedureIntent.confidence < 0.5;
+  // For demo: Never ask questions - always proceed with best guess
+  // Boost confidence if low
+  if (procedureIntent.confidence < 0.7) {
+    procedureIntent.confidence = 0.7;
+  }
   
   return {
     procedureIntent,
-    clarificationNeeded: needsConversation ? "I want to make sure I understand correctly. Could you provide more details about the procedure?" : null,
-    needsConversation,
+    clarificationNeeded: null, // Never ask questions
+    needsConversation: false, // Always proceed
   };
 }
 
@@ -1147,7 +1150,7 @@ export async function generatePriceExplanation(
   },
   procedureIntent: ProcedureIntent
 ): Promise<string[]> {
-  if (USE_LLM) {
+  if (USE_LLM()) {
     try {
       const messages = buildPriceExplanationMessages(pricingResult, costProfile, procedureIntent);
       
@@ -1208,7 +1211,7 @@ export async function generateCostInsights(estimate: Estimate): Promise<string[]
     return [];
   }
 
-  if (USE_LLM) {
+  if (USE_LLM()) {
     try {
       const profile = estimate.inputsSnapshot.profile;
       const costProfile = estimate.inputsSnapshot.costProfile;
@@ -1217,25 +1220,42 @@ export async function generateCostInsights(estimate: Estimate): Promise<string[]
       const messages: LLMMessage[] = [
         {
           role: 'system',
-          content: `You are a helpful healthcare cost advisor for BillHarmony. Provide clear, empathetic insights about medical costs. Be conversational and helpful, not clinical.`
+          content: `You are a helpful healthcare cost advisor for BillHarmony. Provide clear, empathetic, and SPECIFIC insights about medical costs. Be conversational and helpful, not clinical. Always reference specific numbers and facts from the data provided.`
         },
         {
           role: 'user',
-          content: `Generate exactly 3 concise insights about this cost estimate. Each insight must be 80 characters or less. Be specific and actionable.
+          content: `Generate exactly 3 SPECIFIC and ACTIONABLE insights about this cost estimate. Each insight must be 80 characters or less. Be concrete - use actual numbers, compare to benchmarks, and give specific advice.
 
-Procedure: ${estimate.title}
-Estimated Cost: $${results.estimatedOop}
-Allowed Amount: $${results.allowedAmount}
-Deductible Remaining: $${costProfile.deductibleRemaining}
-Coinsurance: ${Math.round(costProfile.normalizedCoinsurance * 100)}%
-Network: ${costProfile.inNetworkPreference ? 'In-network' : 'Out-of-network'}
-Insurance: ${profile.payer || 'Unknown'}
-Regional Price Range: $${estimate.results.regionalBenchmark?.min || 0} - $${estimate.results.regionalBenchmark?.max || 0}
+PROCEDURE DETAILS:
+- Procedure: ${estimate.title}
+- CPT Code(s): ${estimate.procedureIntent?.cpts?.join(', ') || 'Unknown'}
+- Site of Service: ${estimate.procedureIntent?.siteOfService || 'Unknown'}
 
-Provide 3 short insights (max 80 chars each) that help the user understand:
-- Whether this is a good price compared to alternatives
-- What factors are affecting the cost
-- What they should know about this procedure
+COST BREAKDOWN:
+- Your Estimated Out-of-Pocket: $${results.estimatedOop.toFixed(0)}
+- Allowed Amount: $${results.allowedAmount.toFixed(0)}
+- Deductible Applied: $${results.deductibleApplied.toFixed(0)}
+- Coinsurance Due: $${results.coinsuranceDue.toFixed(0)}
+- Deductible Remaining: $${costProfile.deductibleRemaining.toFixed(0)}
+- Coinsurance Rate: ${Math.round(costProfile.normalizedCoinsurance * 100)}%
+
+INSURANCE & NETWORK:
+- Insurance: ${profile.payer || 'Unknown'}
+- Plan Type: ${profile.planType || 'Unknown'}
+- Network Status: ${costProfile.inNetworkPreference ? 'In-network' : 'Out-of-network'}
+- Out-of-Pocket Max: $${profile.oopMax || 0}
+
+PRICING CONTEXT:
+- Regional Price Range: $${estimate.results.regionalBenchmark?.min || 0} - $${estimate.results.regionalBenchmark?.max || 0}
+${estimate.results.regionalBenchmark ? `- Average Regional Price: $${Math.round((estimate.results.regionalBenchmark.min + estimate.results.regionalBenchmark.max) / 2)}` : ''}
+
+REQUIREMENTS:
+- Each insight must be SPECIFIC (mention actual dollar amounts or percentages when relevant)
+- Compare the cost to the regional benchmark if available
+- Mention deductible impact if applicable
+- Give actionable advice (e.g., "You'll pay $X because...", "This is $Y above/below average...")
+- Be empathetic but factual
+- Max 80 characters per insight
 
 Format as a JSON array of exactly 3 strings: ["insight 1", "insight 2", "insight 3"]`
         }
@@ -1246,19 +1266,66 @@ Format as a JSON array of exactly 3 strings: ["insight 1", "insight 2", "insight
         items: { type: 'string' },
       };
 
+      console.log('🤖 Generating AI insights via callLLMWithJSON...');
       const insights = await callLLMWithJSON<string[]>(messages, schema);
-      return insights;
-    } catch (error) {
-      console.error('LLM error generating cost insights, using fallback:', error);
+      console.log('✅ AI insights generated:', insights);
+      if (insights && insights.length > 0) {
+        return insights;
+      } else {
+        console.warn('⚠️ AI returned empty insights array');
+      }
+    } catch (error: any) {
+      console.error('❌ LLM error generating cost insights:', error);
+      console.error('Error stack:', error.stack);
+      // Log more details for debugging
+      const config = getDefaultLLMConfig();
+      if (!config) {
+        console.warn('⚠️ No LLM config available - using fallback insights');
+      } else {
+        console.warn(`⚠️ LLM call failed with ${config.provider} - using fallback insights`);
+        console.warn('Error message:', error.message);
+      }
     }
   }
 
-  // Fallback insights
-  return [
-    `This estimate is based on ${estimate.results.regionalBenchmark?.source || 'regional pricing data'} for your area.`,
-    `The price assumes an ${costProfile.inNetworkPreference ? 'in-network' : 'out-of-network'} provider.`,
-    `Your ${costProfile.deductibleRemaining > 0 ? `$${costProfile.deductibleRemaining} remaining deductible` : 'deductible is met'} affects your out-of-pocket cost.`,
-  ];
+  // Fallback insights - make them realistic and helpful
+  const costProfile = estimate.inputsSnapshot?.costProfile;
+  const results = estimate.results;
+  const insights: string[] = [];
+  
+  // Insight 1: Price comparison
+  if (results.regionalBenchmark) {
+    const avgPrice = (results.regionalBenchmark.min + results.regionalBenchmark.max) / 2;
+    if (results.estimatedOop < avgPrice * 0.9) {
+      insights.push(`This price is below average for your area - good value!`);
+    } else if (results.estimatedOop > avgPrice * 1.1) {
+      insights.push(`This price is above average - consider shopping around.`);
+    } else {
+      insights.push(`This price is typical for ${estimate.title} in your area.`);
+    }
+  } else {
+    insights.push(`Based on CMS pricing data for ${estimate.title}.`);
+  }
+  
+  // Insight 2: Deductible impact
+  if (costProfile?.deductibleRemaining && costProfile.deductibleRemaining > 0) {
+    if (results.estimatedOop >= costProfile.deductibleRemaining) {
+      insights.push(`You'll meet your deductible with this procedure.`);
+    } else {
+      insights.push(`$${costProfile.deductibleRemaining.toFixed(0)} remaining before coinsurance applies.`);
+    }
+  } else {
+    insights.push(`Your deductible is met - you'll only pay coinsurance.`);
+  }
+  
+  // Insight 3: Network status
+  if (costProfile?.inNetworkPreference) {
+    insights.push(`Using in-network providers helps keep costs predictable.`);
+  } else {
+    insights.push(`Verify network status - out-of-network costs can be higher.`);
+  }
+  
+  return insights;
 }
 
 /**
@@ -1272,7 +1339,7 @@ export async function generateMoneySavingTips(estimate: Estimate): Promise<strin
     return [];
   }
 
-  if (USE_LLM) {
+  if (USE_LLM()) {
     try {
       const profile = estimate.inputsSnapshot.profile;
       const costProfile = estimate.inputsSnapshot.costProfile;
@@ -1317,17 +1384,21 @@ Format as a JSON array of exactly 3 strings: ["tip 1", "tip 2", "tip 3"]`
   }
 
   // Fallback tips
+  const costProfile = estimate.inputsSnapshot?.costProfile;
+  const results = estimate.results;
   const tips: string[] = [];
   
-  if (costProfile.deductibleRemaining > 0 && results.estimatedOop > costProfile.deductibleRemaining) {
-    tips.push(`You're close to meeting your deductible. Consider scheduling other needed procedures before the year ends to maximize your benefit.`);
+  if (costProfile && results) {
+    if (costProfile.deductibleRemaining > 0 && results.estimatedOop > costProfile.deductibleRemaining) {
+      tips.push(`You're close to meeting your deductible. Consider scheduling other needed procedures before the year ends to maximize your benefit.`);
+    }
+    
+    if (!costProfile.inNetworkPreference) {
+      tips.push(`Using an in-network provider could significantly reduce your costs. Verify network status before scheduling.`);
+    }
   }
   
-  if (!costProfile.inNetworkPreference) {
-    tips.push(`Using an in-network provider could significantly reduce your costs. Verify network status before scheduling.`);
-  }
-  
-  if (estimate.procedureIntent.requiresPriorAuth) {
+  if (estimate.procedureIntent?.requiresPriorAuth) {
     tips.push(`This procedure requires prior authorization. Get approval from your insurance before scheduling to avoid surprise bills.`);
   }
   

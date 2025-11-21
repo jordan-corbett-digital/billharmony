@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "spitegarden"
+  },
+  "targets": {
+    "spitegarden": {
+      "hosting": {
+        "billharmony": [
+          "billharmony"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

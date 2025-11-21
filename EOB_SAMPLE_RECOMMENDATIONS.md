@@ -103,3 +103,4 @@ The updated parser now:
 2. **Test with enhanced EOB**: Should extract all fields including deductible total, OOP max, copays, plan type
 3. **Test with different EOB formats**: The parser now handles both simple summaries and detailed service tables
 
+

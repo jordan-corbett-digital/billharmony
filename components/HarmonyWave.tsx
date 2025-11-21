@@ -83,3 +83,4 @@ const HarmonyWave: React.FC<HarmonyWaveProps> = ({ steps, currentStep, className
 
 export default HarmonyWave;
 
+

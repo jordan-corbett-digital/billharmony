@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 import DashboardScreen from './screens/DashboardScreen';
@@ -15,8 +15,14 @@ import HealthSystemReports from './screens/HealthSystemReports';
 import HealthSystemSettings from './screens/HealthSystemSettings';
 import BillAnalyzerScreen from './screens/BillAnalyzerScreen';
 import BillDetailsScreen from './screens/BillDetailsScreen';
+import { initializeDemoData } from './services/demo-init';
 
 const App: React.FC = () => {
+  // Initialize demo data on app load if no profile exists
+  useEffect(() => {
+    initializeDemoData().catch(console.error);
+  }, []);
+
   return (
     <HashRouter>
       <Layout>

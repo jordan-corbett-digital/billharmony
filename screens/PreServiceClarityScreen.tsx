@@ -244,41 +244,18 @@ const CostEstimatorScreen: React.FC = () => {
       return;
     }
 
-    // Check if we need clarification before proceeding
-    setIsProcessing(true);
-    try {
-      const parseResult = await parseProcedureIntentWithClarification(aiQuery);
-      
-      // If confidence is low or clarification is needed, start a conversation
-      if (parseResult.needsConversation) {
-        setIsChatting(true);
-        setMessages([
-          { author: 'user', text: aiQuery },
-          { 
-            author: 'ai', 
-            text: parseResult.clarificationNeeded || 
-                  "I want to make sure I understand correctly. Could you provide more details about the procedure? For example:\n• Is this a screening or diagnostic procedure?\n• What part of the body is involved?\n• Are there any specific details I should know?"
-          }
-        ]);
-        setIsProcessing(false);
-        return; // Don't navigate, stay in conversation mode
+      // For demo: Always proceed - never ask clarifying questions
+      setIsProcessing(true);
+      try {
+        const parseResult = await parseProcedureIntentWithClarification(aiQuery);
+        
+        // Always proceed to cost breakdown - never ask questions
+        navigate(`/cost-breakdown?query=${encodeURIComponent(aiQuery)}`);
+      } catch (error) {
+        console.error('Error parsing procedure:', error);
+        // On error, still proceed - use best guess
+        navigate(`/cost-breakdown?query=${encodeURIComponent(aiQuery)}`);
       }
-
-      // If we have good confidence, proceed to cost breakdown
-      navigate(`/cost-breakdown?query=${encodeURIComponent(aiQuery)}`);
-    } catch (error) {
-      console.error('Error parsing procedure:', error);
-      // On error, start conversation to clarify
-      setIsChatting(true);
-      setMessages([
-        { author: 'user', text: aiQuery },
-        { 
-          author: 'ai', 
-          text: "I want to make sure I understand correctly. Could you provide more details about the procedure? For example:\n• What type of procedure is this?\n• Is this a screening or diagnostic procedure?\n• What part of the body is involved?"
-        }
-      ]);
-      setIsProcessing(false);
-    }
   };
 
   const handleSendMessage = async () => {
@@ -300,38 +277,18 @@ const CostEstimatorScreen: React.FC = () => {
       // Try to parse with the additional context
       const parseResult = await parseProcedureIntentWithClarification(conversationContext);
       
-      // If we still need clarification, ask another question
-      if (parseResult.needsConversation && parseResult.clarificationNeeded) {
-        setMessages(prev => [
-          ...prev,
-          { author: 'ai', text: parseResult.clarificationNeeded }
-        ]);
-        setIsProcessing(false);
-        return;
-      }
+      // For demo: Always proceed - never ask clarifying questions
+      // Skip any clarification logic and proceed directly to estimate
 
-      // If we have good confidence now, generate the estimate and navigate
-      if (parseResult.procedureIntent.confidence >= 0.7) {
-        // Generate estimate and navigate (generateEstimate will add the "generating" message and navigate)
-        try {
-          await generateEstimate(parseResult.procedureIntent, conversationContext);
-          // Note: generateEstimate will navigate, so we don't need to do anything else here
-        } catch (error) {
-          console.error('Error in generateEstimate:', error);
-          setMessages(prev => [
-            ...prev,
-            { author: 'ai', text: 'Sorry, I encountered an error generating your estimate. Please try again.' }
-          ]);
-          setIsProcessing(false);
-        }
-      } else {
-        // Still low confidence, ask for more info
+      // For demo: Always proceed - never ask questions, just generate estimate
+      try {
+        await generateEstimate(parseResult.procedureIntent, conversationContext);
+        // Note: generateEstimate will navigate, so we don't need to do anything else here
+      } catch (error) {
+        console.error('Error in generateEstimate:', error);
         setMessages(prev => [
           ...prev,
-          { 
-            author: 'ai', 
-            text: "I'm still not entirely sure. Could you be more specific? For example, what type of procedure is this, or what condition is it for?"
-          }
+          { author: 'ai', text: 'Sorry, I encountered an error generating your estimate. Please try again.' }
         ]);
         setIsProcessing(false);
       }

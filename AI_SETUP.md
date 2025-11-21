@@ -121,3 +121,4 @@ For production deployment, consider:
 3. Adding caching for common queries
 4. Monitoring API costs and usage
 
+
